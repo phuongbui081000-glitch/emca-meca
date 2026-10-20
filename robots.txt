@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://phuongbui081000-glitch.github.io/emca-meca/sitemap.xml
