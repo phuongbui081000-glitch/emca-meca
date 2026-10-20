@@ -63,7 +63,8 @@ h3{font-size:24px;line-height:1.4;letter-spacing:-.5px;font-weight:650;margin:0 
 footer{display:flex;justify-content:space-between;gap:25px;align-items:center;padding-top:30px!important;padding-bottom:32px!important;margin-top:45px!important;border-top:1px solid #dce6f1;font-size:14px}
 footer p{font-size:14px;margin:0}
 footer>span{font-size:14px;color:#536a86}
-.footer-brand{font-size:20px;font-weight:650;letter-spacing:-.5px;color:#246BCE}
+.footer-brand{display:inline-flex;flex-shrink:0}
+.footer-brand img{display:block;width:180px;height:auto}
 .sr-only,.skip{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
 .skip:focus{clip:auto;width:auto;height:auto;padding:10px;background:white;z-index:10}
 .reader-open{overflow:hidden}
@@ -117,6 +118,7 @@ h3{font-size:23px}
 .about h2{font-size:29px}
 footer{margin-top:32px!important;gap:15px;align-items:start}
 footer p{width:100%;order:3}
+.footer-brand img{width:160px}
 dialog{padding:22px}
 .article-title{font-size:29px}
 .reader-brand{font-size:14px}
