@@ -196,4 +196,9 @@ nav{gap:12px;font-size:14px}
 .article-cover figcaption,.article-body figcaption{font-size:17px}
 
 /* Logo hai dòng được Cá duyệt ngày 22/10/2026. */
-.brand img{width:196px;height:auto}.footer-brand img{width:180px;height:auto}@media(max-width:600px){.brand img{width:145px}.footer-brand img{width:160px}}@media(max-width:370px){.brand img{width:128px}}
+.brand img{width:180px;height:auto}.footer-brand img{width:180px;height:auto}
+/* Cân đối header theo yêu cầu Cá ngày 22/10/2026. */
+.header nav{align-items:center;font-size:18px;font-weight:550;line-height:1.4}
+.header nav>a{display:inline-flex;align-items:center;justify-content:center;min-height:44px}
+@media(max-width:600px){.brand img{width:136px}.footer-brand img{width:160px}.header nav{font-size:16px;gap:14px}.header .search-toggle{width:40px;height:40px}}
+@media(max-width:370px){.brand img{width:116px}.header nav{font-size:15px;gap:10px}.header .search-toggle{width:36px;height:36px}}
