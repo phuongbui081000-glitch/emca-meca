@@ -16,6 +16,10 @@
     "d633fffbd068d0cb7152cf03ae7d99cf09894e973dbfc00ae5793988ab634e01": {
       "status": "baseline",
       "url": "https://phuongbui081000-glitch.github.io/emca-meca/bai-viet/cac-phuong-phap-pha-ca-phe-pho-bien/"
+    },
+    "connection-test-v1": {
+      "status": "sending",
+      "url": "https://phuongbui081000-glitch.github.io/emca-meca/"
     }
   }
 }
