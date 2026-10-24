@@ -42,6 +42,10 @@
     "facebook:1314701205068419_122098477047517384": {
       "status": "baseline",
       "url": "https://www.facebook.com/122102620425517384/posts/122098477047517384?substory_index=951861720904705"
+    },
+    "facebook-connection-test-v1": {
+      "status": "sending",
+      "url": "https://www.facebook.com/122102620425517384/posts/122101458939517384"
     }
   },
   "facebookInitialized": true
