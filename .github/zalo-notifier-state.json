@@ -22,6 +22,27 @@
       "url": "https://phuongbui081000-glitch.github.io/emca-meca/",
       "message_id": "b999c8296766283f7170",
       "sentAt": "2026-10-24T03:05:46.095Z"
+    },
+    "facebook:1314701205068419_122101458939517384": {
+      "status": "baseline",
+      "url": "https://www.facebook.com/122102620425517384/posts/122101458939517384"
+    },
+    "facebook:1314701205068419_122099611089517384": {
+      "status": "baseline",
+      "url": "https://www.facebook.com/122102620425517384/posts/122099611089517384"
+    },
+    "facebook:1314701205068419_1821167769034246": {
+      "status": "baseline",
+      "url": "https://www.facebook.com/122102620425517384/posts/1821167769034246?substory_index=1821167769034246"
+    },
+    "facebook:1314701205068419_122098494819517384": {
+      "status": "baseline",
+      "url": "https://www.facebook.com/122102620425517384/posts/122098494819517384"
+    },
+    "facebook:1314701205068419_122098477047517384": {
+      "status": "baseline",
+      "url": "https://www.facebook.com/122102620425517384/posts/122098477047517384?substory_index=951861720904705"
     }
-  }
+  },
+  "facebookInitialized": true
 }
