@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
+    inputs:
+      test_connection:
+        description: Send the one-time GitHub connection test to Zalo
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -21,4 +26,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           ZALO_BOT_TOKEN: ${{ secrets.ZALO_BOT_TOKEN }}
           ZALO_GROUP_ID: ${{ secrets.ZALO_GROUP_ID }}
+          ZALO_TEST_CONNECTION: ${{ inputs.test_connection }}
         run: node .github/scripts/notifier.mjs

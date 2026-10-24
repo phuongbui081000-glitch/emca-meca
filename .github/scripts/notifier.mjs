@@ -31,7 +31,7 @@ export async function processItems(items,store,send){
     state.events[item.id]={status:'sending',url:item.url};
     await store.save(state); // Persist the claim before the external side effect.
     let receipt;
-    try{receipt=await send(`Cá có bài mới trên web nè.\n${item.title}\nĐọc bài tại đây:\n${item.url}`);}
+    try{receipt=await send(item.message||`Cá có bài mới trên web nè.\n${item.title}\nĐọc bài tại đây:\n${item.url}`);}
     catch{state.events[item.id].status='unknown';await store.save(state);throw new Error('Delivery uncertain; no automatic retry');}
     state.events[item.id]={status:'sent',url:item.url,message_id:receipt.message_id,sentAt:new Date().toISOString()};
     await store.save(state);sent++;
@@ -79,6 +79,13 @@ async function main(){
   if(process.argv.includes('--dry-run')){console.log(JSON.stringify({feedItems:items.length,mode:'read-only',sent:0}));return;}
   const {GITHUB_REPOSITORY,GITHUB_TOKEN,ZALO_BOT_TOKEN,ZALO_GROUP_ID}=process.env;
   if(!GITHUB_TOKEN||!ZALO_BOT_TOKEN||!ZALO_GROUP_ID)throw new Error('Required secrets missing');
-  console.log(JSON.stringify(await processItems(items,githubStore(GITHUB_REPOSITORY,GITHUB_TOKEN),text=>sendZalo(text,ZALO_BOT_TOKEN,ZALO_GROUP_ID))));
+  const store=githubStore(GITHUB_REPOSITORY,GITHUB_TOKEN);
+  const send=text=>sendZalo(text,ZALO_BOT_TOKEN,ZALO_GROUP_ID);
+  if(process.env.ZALO_TEST_CONNECTION==='true'){
+    const state=await store.load();if(!state.initialized)throw new Error('Initialize web baseline before connection test');
+    const testItem={id:'connection-test-v1',url:SITE,message:`Thông báo thử bot emca meca.\nBot đã gửi tin này từ GitHub, không phụ thuộc máy của Cá đang mở.\nPhần theo dõi bài web mới đã được bật; Facebook chưa kết nối.\n${SITE}`};
+    console.log(JSON.stringify({mode:'connection-test',...await processItems([testItem],store,send)}));return;
+  }
+  console.log(JSON.stringify(await processItems(items,store,send)));
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){main().catch(()=>{console.error('Notification run failed. No credentials or raw request errors printed. Review delivery state before retry.');process.exitCode=1;});}
