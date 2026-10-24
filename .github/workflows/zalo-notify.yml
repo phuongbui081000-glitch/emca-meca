@@ -8,6 +8,10 @@ on:
         description: Send the one-time GitHub connection test to Zalo
         type: boolean
         default: false
+      test_facebook:
+        description: Send the one-time Facebook connection test to Zalo
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -27,4 +31,7 @@ jobs:
           ZALO_BOT_TOKEN: ${{ secrets.ZALO_BOT_TOKEN }}
           ZALO_GROUP_ID: ${{ secrets.ZALO_GROUP_ID }}
           ZALO_TEST_CONNECTION: ${{ inputs.test_connection }}
+          FACEBOOK_PAGE_TOKEN: ${{ secrets.FACEBOOK_PAGE_TOKEN }}
+          FACEBOOK_TOKEN_EXPIRES_AT: '1798022649'
+          FACEBOOK_TEST_CONNECTION: ${{ inputs.test_facebook }}
         run: node .github/scripts/notifier.mjs

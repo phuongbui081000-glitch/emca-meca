@@ -38,6 +38,45 @@ export async function processItems(items,store,send){
   }
   return {baseline:0,sent};
 }
+export const FACEBOOK_PAGE_ID='1314701205068419';
+export async function facebookItems(token,fetcher=fetch){
+  if(!token)throw new Error('Facebook token missing');
+  const read=async(path,params)=>{
+    const url=new URL(`https://graph.facebook.com/v26.0/${path}`);
+    for(const [key,value] of Object.entries(params))url.searchParams.set(key,value);
+    let response,data;
+    try{response=await fetcher(url,{headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(20000)});data=await response.json();}catch{throw new Error('Facebook connection failed');}
+    if(!response.ok||data.error)throw new Error('Facebook access failed; check Page token');
+    return data;
+  };
+  const identity=await read('me',{fields:'id,name'});
+  if(identity.id!==FACEBOOK_PAGE_ID)throw new Error('Unexpected Facebook Page');
+  const items=[];let after;
+  for(let page=0;page<20;page++){
+    const data=await read(`${FACEBOOK_PAGE_ID}/published_posts`,{fields:'id,message,created_time,permalink_url',limit:'100',...(after?{after}:{})});
+    if(!Array.isArray(data.data))throw new Error('Invalid Facebook posts');
+    for(const post of data.data){
+      let url;try{url=new URL(post.permalink_url);}catch{throw new Error('Missing Facebook permalink');}
+      if(!post.id?.startsWith(FACEBOOK_PAGE_ID+'_')||url.protocol!=='https:'||!['facebook.com','www.facebook.com','m.facebook.com'].includes(url.hostname))throw new Error('Unexpected Facebook post');
+      const title=(post.message||'Bài đăng mới trên Page Emca meca').split(/\r?\n/).find(x=>x.trim())?.trim().slice(0,300)||'Bài đăng mới trên Page Emca meca';
+      items.push({id:`facebook:${post.id}`,title,url:url.href,message:`Cá có bài mới trên Page nè.\n${title}\nXem bài tại đây:\n${url.href}`});
+    }
+    if(!data.paging?.next){if(new Set(items.map(x=>x.id)).size!==items.length)throw new Error('Duplicate Facebook posts');return items;}
+    const cursor=data.paging?.cursors?.after;
+    if(!cursor||cursor===after)throw new Error('Invalid Facebook pagination');
+    after=cursor;
+  }
+  throw new Error('Facebook history exceeds safe pagination limit');
+}
+export async function processFacebook(items,store,send){
+  const state=await store.load();
+  if(!state.initialized)throw new Error('Initialize web first');
+  if(!state.facebookInitialized){
+    for(const item of items)if(!state.events[item.id])state.events[item.id]={status:'baseline',url:item.url};
+    state.facebookInitialized=true;await store.save(state);return {baseline:items.length,sent:0};
+  }
+  return processItems(items,store,send);
+}
 export function githubStore(repo,token,fetcher=fetch){
   if(repo!=='phuongbui081000-glitch/emca-meca')throw new Error('Unexpected repository');
   let sha;
@@ -86,6 +125,18 @@ async function main(){
     const testItem={id:'connection-test-v1',url:SITE,message:`Thông báo thử bot emca meca.\nBot đã gửi tin này từ GitHub, không phụ thuộc máy của Cá đang mở.\nPhần theo dõi bài web mới đã được bật; Facebook chưa kết nối.\n${SITE}`};
     console.log(JSON.stringify({mode:'connection-test',...await processItems([testItem],store,send)}));return;
   }
-  console.log(JSON.stringify(await processItems(items,store,send)));
+  console.log(JSON.stringify({source:'web',...await processItems(items,store,send)}));
+  if(process.env.FACEBOOK_PAGE_TOKEN){
+    const expires=Number(process.env.FACEBOOK_TOKEN_EXPIRES_AT||0);
+    if(expires&&Date.now()/1000>=expires)throw new Error('Facebook token expired');
+    if(expires&&expires-Date.now()/1000<14*86400)console.log('::warning::Facebook Page token needs renewal before 2026-12-23.');
+    const posts=await facebookItems(process.env.FACEBOOK_PAGE_TOKEN);
+    console.log(JSON.stringify({source:'facebook',...await processFacebook(posts,store,send)}));
+    if(process.env.FACEBOOK_TEST_CONNECTION==='true'){
+      if(!posts.length)throw new Error('No published Facebook post for connection test');
+      const latest=posts[0];
+      console.log(JSON.stringify({mode:'facebook-connection-test',...await processItems([{...latest,id:'facebook-connection-test-v1',message:`Thông báo thử kết nối Page Emca meca.\nBot đã đọc được bài Page và đường link thật. Đây là tin thử, không phải thông báo bài mới.\n${latest.title}\n${latest.url}`}],store,send)}));
+    }
+  }
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){main().catch(()=>{console.error('Notification run failed. No credentials or raw request errors printed. Review delivery state before retry.');process.exitCode=1;});}
