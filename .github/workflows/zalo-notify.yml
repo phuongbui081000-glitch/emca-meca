@@ -1,0 +1,24 @@
+name: Zalo community notifications
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: zalo-community-notifier
+  cancel-in-progress: false
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check notifier
+        run: node --test .github/scripts/notifier.test.mjs
+      - name: Notify new published web articles
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ZALO_BOT_TOKEN: ${{ secrets.ZALO_BOT_TOKEN }}
+          ZALO_GROUP_ID: ${{ secrets.ZALO_GROUP_ID }}
+        run: node .github/scripts/notifier.mjs
