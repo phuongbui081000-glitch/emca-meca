@@ -1,7 +1,5 @@
 name: Zalo community notifications
 on:
-  schedule:
-    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
     inputs:
       test_connection:
@@ -35,3 +33,4 @@ jobs:
           FACEBOOK_TOKEN_EXPIRES_AT: '1798022649'
           FACEBOOK_TEST_CONNECTION: ${{ inputs.test_facebook }}
         run: node .github/scripts/notifier.mjs
+
