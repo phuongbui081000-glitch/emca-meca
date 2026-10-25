@@ -48,6 +48,10 @@
       "url": "https://www.facebook.com/122102620425517384/posts/122101458939517384",
       "message_id": "984725f172d43d8d64c2",
       "sentAt": "2026-10-24T10:55:17.100Z"
+    },
+    "facebook:1314701205068419_122103347199517384": {
+      "status": "sending",
+      "url": "https://www.facebook.com/122102620425517384/posts/122103347199517384"
     }
   },
   "facebookInitialized": true
