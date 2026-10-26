@@ -60,6 +60,10 @@
       "url": "https://www.facebook.com/122102620425517384/posts/122103373797517384",
       "message_id": "7763c770e8d7a78efec1",
       "sentAt": "2026-10-25T05:08:28.513Z"
+    },
+    "facebook:1314701205068419_122104251123517384": {
+      "status": "sending",
+      "url": "https://www.facebook.com/122102620425517384/posts/122104251123517384"
     }
   },
   "facebookInitialized": true
