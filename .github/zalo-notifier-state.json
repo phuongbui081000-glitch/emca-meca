@@ -86,8 +86,10 @@
       "sentAt": "2026-10-28T08:04:18.533Z"
     },
     "9f972d55196c63075de2ba961556cecc73e5a11f57a116e887e94ebb127c6e46": {
-      "status": "sending",
-      "url": "https://phuongbui081000-glitch.github.io/emca-meca/bai-viet/ly-ca-hom-nay-ngon-ghe-mai-pha-lai-duoc-khong/"
+      "status": "sent",
+      "url": "https://phuongbui081000-glitch.github.io/emca-meca/bai-viet/ly-ca-hom-nay-ngon-ghe-mai-pha-lai-duoc-khong/",
+      "message_id": "2fa59bf3b040f019a956",
+      "sentAt": "2026-10-28T14:38:18.292Z"
     }
   },
   "facebookInitialized": true
