@@ -92,5 +92,6 @@
       "sentAt": "2026-10-28T14:38:18.292Z"
     }
   },
-  "facebookInitialized": true
+  "facebookInitialized": true,
+  "ieltsInitialized": true
 }
