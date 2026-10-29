@@ -3,21 +3,26 @@ import {pathToFileURL} from 'node:url';
 
 export const FEED='https://phuongbui081000-glitch.github.io/emca-meca/feed.xml';
 const SITE='https://phuongbui081000-glitch.github.io/emca-meca/';
+export const IELTS_SITE='https://emca-ielts.emca-ielts.workers.dev/';
+export const IELTS_FEED=IELTS_SITE+'feed.xml';
 const STATE_BRANCH='zalo-notifier-state';
 const STATE_PATH='.github/zalo-notifier-state.json';
 const hash=s=>createHash('sha256').update(s).digest('hex');
 const decode=s=>s.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,'$1').replace(/&#(x[\da-f]+|\d+);|&(amp|lt|gt|quot|apos);/gi,(m,n,e)=>n?String.fromCodePoint(parseInt(n[0].toLowerCase()==='x'?n.slice(1):n,n[0].toLowerCase()==='x'?16:10)):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"}[e.toLowerCase()]));
-export function parseFeed(xml){
+export function parseFeed(xml,{site=SITE,prefix=SITE+'bai-viet/',idPrefix=''}={}){
   if(!/<rss\b/i.test(xml)||/<!DOCTYPE|<!ENTITY/i.test(xml))throw new Error('Invalid RSS');
   const items=[...xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/gi)].map(m=>{
     const field=tag=>decode(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`,'i').exec(m[1])?.[1]||'').trim();
     const title=field('title'),url=field('link');
-    if(!title||title.length>400||!url.startsWith(SITE+'bai-viet/')||new URL(url).origin!==new URL(SITE).origin)throw new Error('Invalid feed item');
-    return {id:hash(url),title,url};
+    if(!title||title.length>400||!url.startsWith(prefix)||new URL(url).origin!==new URL(site).origin)throw new Error('Invalid feed item');
+    return {id:idPrefix+hash(url),title,url};
   });
   if(new Set(items.map(i=>i.id)).size!==items.length)throw new Error('Duplicate feed URL');
   return items;
 }
+export function parseIeltsFeed(xml){return parseFeed(xml,{site:IELTS_SITE,prefix:IELTS_SITE+'updates/?id=',idPrefix:'ielts:'}).map(item=>{const url=new URL(item.url);if(url.pathname!=='/updates/'||url.username||url.password||url.hash||[...url.searchParams.keys()].join(',')!=='id'||!/^[-a-z0-9]{1,100}$/.test(url.searchParams.get('id')))throw new Error('Invalid public IELTS update');return {...item,message:`emca ielts có bài học, học liệu hoặc cập nhật mới\n${item.title}\nhọc đê\n${item.url}`}})}
+export async function readIeltsFeed(fetcher=fetch){const r=await fetcher(IELTS_FEED,{signal:AbortSignal.timeout(20000)});if(!r.ok)throw new Error('IELTS public feed unavailable');const xml=await r.text();if(xml.length>2000000)throw new Error('IELTS public feed too large');return parseIeltsFeed(xml)}
+export async function processIelts(items,store,send){const state=await store.load();if(!state.initialized)throw new Error('Initialize web first');if(!state.ieltsInitialized){for(const item of items)if(!state.events[item.id])state.events[item.id]={status:'baseline',url:item.url};state.ieltsInitialized=true;await store.save(state);return {baseline:items.length,sent:0}}return processItems(items,store,send)}
 export async function processItems(items,store,send){
   const state=await store.load();
   if(!state.initialized){
@@ -115,7 +120,7 @@ async function main(){
   if(!response.ok)throw new Error('RSS unavailable');
   const xml=await response.text();if(xml.length>2000000)throw new Error('RSS too large');
   const items=parseFeed(xml);
-  if(process.argv.includes('--dry-run')){console.log(JSON.stringify({feedItems:items.length,mode:'read-only',sent:0}));return;}
+  if(process.argv.includes('--dry-run')){const ielts=await readIeltsFeed();console.log(JSON.stringify({feedItems:items.length,ieltsItems:ielts.length,mode:'read-only',sent:0}));return;}
   const {GITHUB_REPOSITORY,GITHUB_TOKEN,ZALO_BOT_TOKEN,ZALO_GROUP_ID}=process.env;
   if(!GITHUB_TOKEN||!ZALO_BOT_TOKEN||!ZALO_GROUP_ID)throw new Error('Required secrets missing');
   const store=githubStore(GITHUB_REPOSITORY,GITHUB_TOKEN);
@@ -138,5 +143,7 @@ async function main(){
       console.log(JSON.stringify({mode:'facebook-connection-test',...await processItems([{...latest,id:'facebook-connection-test-v1',message:`Thông báo thử kết nối Page Emca meca.\nBot đã đọc được bài Page và đường link thật. Đây là tin thử, không phải thông báo bài mới.\n${latest.title}\n${latest.url}`}],store,send)}));
     }
   }
+  console.log(JSON.stringify({source:'ielts-public',...await processIelts(await readIeltsFeed(),store,send)}));
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){main().catch(()=>{console.error('Notification run failed. No credentials or raw request errors printed. Review delivery state before retry.');process.exitCode=1;});}
+

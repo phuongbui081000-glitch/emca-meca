@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {parseFeed,processItems,sendZalo,facebookItems,processFacebook,FACEBOOK_PAGE_ID} from './notifier.mjs';
+import {parseFeed,processItems,sendZalo,facebookItems,processFacebook,FACEBOOK_PAGE_ID,parseIeltsFeed,processIelts,IELTS_SITE} from './notifier.mjs';
 const url='https://phuongbui081000-glitch.github.io/emca-meca/bai-viet/bai-moi/';
 const item={id:'new',title:'Bài mới',url};
 function memory(initial={initialized:false,events:{}}){let data=structuredClone(initial);return {load:async()=>structuredClone(data),save:async state=>{data=structuredClone(state);},snapshot:()=>data};}
 test('first successful feed becomes baseline without sending old articles',async()=>{const store=memory();let calls=0;assert.deepEqual(await processItems([item],store,async()=>{calls++;}),{baseline:1,sent:0});assert.equal(calls,0);});
+
+test('IELTS starts its own baseline without replaying history or changing web/Facebook entries',async()=>{const store=memory({initialized:true,facebookInitialized:true,events:{web:{status:'sent'},'facebook:old':{status:'sent'}}});let sends=0;const old={id:'ielts:old',title:'Old public lesson',url:IELTS_SITE+'updates/?id=old'},fresh={id:'ielts:new',title:'New public lesson',url:IELTS_SITE+'updates/?id=new'};const send=async()=>{sends++;return {message_id:'test-only'}};assert.deepEqual(await processIelts([old],store,send),{baseline:1,sent:0});await processIelts([fresh,old],store,send);await processIelts([fresh,old],store,send);assert.equal(sends,1);assert.equal(store.snapshot().events.web.status,'sent');assert.equal(store.snapshot().events['facebook:old'].status,'sent');assert.equal(store.snapshot().events['ielts:old'].status,'baseline')});
+test('IELTS parser accepts only the public updates path and rejects learner APIs or another origin',()=>{const rss=link=>`<rss><channel><item><title>Public lesson</title><link>${link}</link></item></channel></rss>`;const parsed=parseIeltsFeed(rss(IELTS_SITE+'updates/?id=lesson-1'));assert(parsed[0].id.startsWith('ielts:'));assert.throws(()=>parseIeltsFeed(rss(IELTS_SITE+'api/room/state')));assert.throws(()=>parseIeltsFeed(rss(IELTS_SITE+'updates/?id=ok&amp;token=private')));assert.throws(()=>parseIeltsFeed(rss('https://other.example/updates/?id=lesson-1')))});
 test('new article sends once and persists confirmed receipt',async()=>{const store=memory({initialized:true,events:{}});let calls=0;const send=async()=>{calls++;return {message_id:'receipt'};};await processItems([item],store,send);await processItems([item],store,send);assert.equal(calls,1);assert.equal(store.snapshot().events.new.status,'sent');});
 test('claim must persist before sending; state write failure sends nothing',async()=>{let calls=0;await assert.rejects(processItems([item],{load:async()=>({initialized:true,events:{}}),save:async()=>{throw new Error('write failed');}},async()=>{calls++;}));assert.equal(calls,0);});
 test('uncertain send is held for review instead of automatic duplicate',async()=>{const store=memory({initialized:true,events:{}});let calls=0;const send=async()=>{calls++;throw new Error('connection reset after delivery');};await assert.rejects(processItems([item],store,send));await assert.rejects(processItems([item],store,send));assert.equal(calls,1);assert.equal(store.snapshot().events.new.status,'unknown');});
@@ -31,3 +34,4 @@ test('Facebook rejects wrong Page, foreign permalink and secret-bearing transpor
   let calls=0;await assert.rejects(facebookItems('secret',async()=>({ok:true,json:async()=>++calls===1?{id:FACEBOOK_PAGE_ID}:{data:[{id:FACEBOOK_PAGE_ID+'_1',permalink_url:'https://example.com/'}]}})),/Unexpected Facebook post/);
   await assert.rejects(facebookItems('secret',async()=>{throw new Error('secret');}),e=>!e.message.includes('secret'));
 });
+
