@@ -92,8 +92,10 @@
       "sentAt": "2026-10-28T14:38:18.292Z"
     },
     "facebook:1314701205068419_122106724917517384": {
-      "status": "sending",
-      "url": "https://www.facebook.com/122102620425517384/posts/122106724917517384"
+      "status": "sent",
+      "url": "https://www.facebook.com/122102620425517384/posts/122106724917517384",
+      "message_id": "bf3e1d632b2e69773038",
+      "sentAt": "2026-10-30T02:30:31.578Z"
     }
   },
   "facebookInitialized": true,
