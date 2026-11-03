@@ -114,6 +114,10 @@
       "url": "https://www.facebook.com/122102620425517384/posts/122108028165517384",
       "message_id": "68cbd1ac369572cc2b83",
       "sentAt": "2026-11-02T02:30:31.849Z"
+    },
+    "facebook:1314701205068419_122108337387517384": {
+      "status": "sending",
+      "url": "https://www.facebook.com/122102620425517384/posts/122108337387517384"
     }
   },
   "facebookInitialized": true,
